@@ -1,44 +1,62 @@
-
 import * as React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Provider } from 'react-redux';
+import store from './redux';
+import { useEffect } from 'react';
+import './App.css'
+
+// import "./App.css"
 
 function Board() {
-  const squares = Array(9).fill(null);
-  function selectSquare(square) {
+  const dispatch = useDispatch();
+  const squares = useSelector((state) => state.squares);
+  const status = useSelector((state) => state.status);
+  
+  useEffect(() => {
+    const winner = calculateWinner(squares);
+    const nextValue = calculateNextValue(squares);
+    const status = calculateStatus(winner, squares, nextValue);
+    dispatch({ type: 'SET_STATUS', payload: { status } });
+  }, [dispatch, squares]);
 
+  function selectSquare(index) {
+    const nextValue = calculateNextValue(squares);
+    dispatch({ type: 'SELECT_SQUARE', payload: { index, nextValue } });
   }
 
   function restart() {
+    dispatch({ type: 'RESTART' });
   }
 
   function renderSquare(i) {
     return (
-      <button className="square" onClick={() => selectSquare(i)}>
+      <button className="square bg-white hover:bg-gray-100 text-indigo-900 font-bold py-2 px-4 border border-gray-400 rounded shadow text-5xl mr-1 ml-1" onClick={() => squares[i] === null && selectSquare(i)}>
         {squares[i]}
       </button>
     );
   }
 
   return (
-    <div>
-      <div >STATUS</div>
-      <div >
-        {renderSquare(0)}
-        {renderSquare(1)}
-        {renderSquare(2)}
+    <div className='text-center mt-20'>
+      <p className='status text-2xl mb-3'>{status}</p>
+      <div className='m-auto box-content contain'>
+      <div className='box mb-2 mt-2'>
+         {renderSquare(0)}
+         {renderSquare(1)} 
+         {renderSquare(2)} 
       </div>
-      <div >
+      <div className='box mb-2 mt-2'>
         {renderSquare(3)}
         {renderSquare(4)}
         {renderSquare(5)}
-      </div>
-      <div >
+      </div >
+      <div className='box mb-2 mt-2'>
         {renderSquare(6)}
         {renderSquare(7)}
         {renderSquare(8)}
       </div>
-      <button onClick={restart}>
-        restart
-      </button>
+      </div>
+      <button className='bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded mt-2' onClick={restart}>Restart</button>
     </div>
   );
 }
@@ -56,10 +74,10 @@ function Game() {
 // eslint-disable-next-line no-unused-vars
 function calculateStatus(winner, squares, nextValue) {
   return winner
-    ? `Winner: ${winner}`
+    ? `Winner: Player ${winner}`
     : squares.every(Boolean)
       ? `Scratch: Cat's game`
-      : `Next player: ${nextValue}`;
+      : `Next Player: ${nextValue}`;
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -88,8 +106,13 @@ function calculateWinner(squares) {
   return null;
 }
 
+
 function App() {
-  return <Game />;
+  return (
+    <Provider store={store}>
+      <Game />
+    </Provider>
+  );
 }
 
-export default App;
+export default App
